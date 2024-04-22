@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string>
 #include <unistd.h>
+#include <fstream>
 
 using namespace std;
 
@@ -37,13 +38,15 @@ int main(int argc, char *argv[])
     try {
         if (argc < 2) {
             throw "No iteration number or board file provided";
+        } else if (argc < 3) {
+            throw "No board provided";
         }
-        //  else if (argc < 3) {
-        //     throw "No board provided";
-        // }
         
         iterations = atoi(argv[1]);
-        // filename = argv[2];
+        if (iterations < 0) {
+            throw "The number of iterations has to be greater than 0";
+        }
+        filename = argv[2];
     } catch (const char* e) {
         cout << e << endl;
         exit(1);
@@ -54,12 +57,19 @@ int main(int argc, char *argv[])
     array <bool, GRID_N_GHOST*GRID_M_GHOST> boardNext{};
     array <bool, GRID_N_GHOST*GRID_M_GHOST>* boardNextPtr = &boardNext;
 
-    board[(4+GHOST)*GRID_N_GHOST + (5+GHOST)] = true;
-    board[(5+GHOST)*GRID_N_GHOST + (5+GHOST)] = true;
-    board[(6+GHOST)*GRID_N_GHOST + (6+GHOST)] = true;
-    board[(5+GHOST)*GRID_N_GHOST + (6+GHOST)] = true;
-    board[(6+GHOST)*GRID_N_GHOST + (5+GHOST)] = true;
-    board[(9+GHOST)*GRID_N_GHOST + (9+GHOST)] = true;
+    try
+    {
+        std::ifstream infile(filename);
+        int x, y;
+        while (infile >> x >> y) {
+            board[(y+GHOST)*GRID_N_GHOST + (x+GHOST)] = true;
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        exit(2);
+    }
     
     cout << "Step 0:\n";
     printBoard(boardPtr);
